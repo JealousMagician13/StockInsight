@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# Link to the updated style.css #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {# Link to Font Awesome added here for global availability #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {# Block for page-specific head scripts/styles #}
+    {% block head_scripts %}{% endblock %}
+    <title>{% block title %}StockInsight{% endblock %}</title> {# Default title #}
+    <style>
+        /* Basic styles to ensure footer stays at bottom */
+        html { height: 100%; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        .main-content { flex-grow: 1; }
+        /* Add any other essential base styles here if not covered by style.css */
+    </style>
+</head>
+<body>
+    {# Header structure from index.html #}
+    <header>
+        <div class="container">
+            <nav>
+                {# Logo from index.html - Ensure url_for points to home #}
+                <a href="{{ url_for('index') }}" class="logo">
+                    <div class="logo-icon">
+                        {# SVG icon from index.html #}
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v20M2 12h20M2 7h7M2 17h7M15 7h7M15 17h7"></path>
+                        </svg>
+                    </div>
+                    Stock<span>Insight</span>
+                </a>
+                {# Navigation links from index.html, using Font Awesome icons #}
+                <ul class="nav-links">
+                    {# Ensure url_for points to correct routes or use '#' for placeholders #}
+                    <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{{ url_for('index') }}#features"><i class="fas fa-chart-line"></i> Features</a></li>
+                    <li><a href="{{ url_for('index') }}#market-insights"><i class="fas fa-lightbulb"></i> Insights</a></li>
+                    <li><a href="{{ url_for('index') }}#founder"><i class="fas fa-user"></i> About</a></li>
+                    <li><a href="{{ url_for('index') }}#contact"><i class="fas fa-envelope"></i> Contact</a></li>
+                     {# Add other relevant links from original base.html if needed #}
+                     {# Example: <li><a href="{{ url_for('some_other_page') }}">Price Prediction</a></li> #}
+                 </ul>
+                {# Consider adding a mobile menu toggle button here #}
+            </nav>
+        </div>
+    </header>
+
+    {# Main content block where page content will be injected #}
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {# Footer structure from index.html #}
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                {# About section from index.html footer #}
+                <div class="footer-about">
+                    <div class="footer-logo">
+                        <h4>Disclaimer</h4>
+                    </div>
+                    <p><i>Disclaimer: Market conditions are volatile. Readers should conduct their own thorough due diligence and consult with a qualified financial professional before making any investment decisions.</i></p>
+                </div>
+                {# Quick Links from index.html footer #}
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                         {# Match links in header #}
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('index') }}#features">Features</a></li>
+                        <li><a href="{{ url_for('index') }}#market-insights">Insights</a></li>
+                        <li><a href="{{ url_for('index') }}#founder">About Us</a></li>
+                        <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+                     </ul>
+                </div>
+                {# Resources Links from index.html footer #}
+                <div class="footer-links">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">API Documentation <span style="font-size: 0.8em; color: #888;">(updating soon)</span></a></li>
+                        <li><a href="#">Knowledge Base <span style="font-size: 0.8em; color: #888;">(updating soon)</span></a></li>
+                        <li><a href="#">Help Center <span style="font-size: 0.8em; color: #888;">(updating soon)</span></a></li>
+                        <li><a href="#">FAQs <span style="font-size: 0.8em; color: #888;">(updating soon)</span></a></li>
+                    </ul>
+                </div>
+            </div>
+            {# Copyright updated based on index.html and original base.html #}
+            <div class="copyright">
+                <p>&copy; 2025 StockInsight. Proudly Developed by Vishal Jadaun & Team</p>
+            </div>
+        </div>
+    </footer>
+
+    {# Block for page-specific scripts loaded at the end of the body #}
+    {% block body_scripts %}{% endblock %}
+</body>
+</html>

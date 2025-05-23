@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Report: {{ filename }}{% endblock %}
+
+{% block head_scripts %}
+    <style>
+        /* Add styles specific to the embedded report if needed */
+        /* For example, to ensure content fits well */
+        main {
+            padding: 1rem; /* Example style to ensure consistent spacing */
+        }
+        /* You might need to target specific elements *within* report_content */
+        /* Be careful with overly broad selectors */
+        /* Example: Ensure images within the report aren't too wide */
+        .embedded-report-content img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <div class="report-wrapper container"> <div style="padding: 1rem 0; border-bottom: 1px solid #eee; margin-bottom: 1rem; text-align: right;">
+             <a href="{{ url_for('index') }}" class="btn btn-secondary">Generate New Report</a>
+             </div>
+
+        <div class="embedded-report-content">
+            {{ report_content | safe }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {% endblock %}

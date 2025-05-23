@@ -1,0 +1,871 @@
+{% extends "base.html" %} {# Keep extending the base template #}
+
+{# Use the title from the new index.html design #}
+{% block title %}StockInsight | Advanced AI Stock Analysis & Predictions{% endblock %}
+
+{% block head_scripts %}
+    {# Add Font Awesome CSS link needed by the new design #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- Styles copied from index.html's <style> tag --- */
+        /* Minimal reset - assuming base.html or style.css handles broader resets */
+        :root {
+            --primary: #10ac84;
+            --secondary: #2e86de;
+            --dark: #2d3436; /* Match header/footer in updated base.html */
+            --light: #f5f6fa;
+            --danger: #e74c3c;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --info: #3498db;
+            --font-main: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        /* Base container styling, might conflict/override style.css, review needed */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Hero section styles */
+        .hero {
+            background: linear-gradient(135deg, var(--dark) 0%, #1e272e 100%);
+            color: #fff;
+            padding: 4rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon fill="rgba(46, 134, 222, 0.05)" points="0,100 100,0 100,100"/></svg>') no-repeat;
+            background-size: 100% 100%;
+            z-index: 0;
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        .hero-text h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            background: linear-gradient(90deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-text p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        /* Form styles integrated from original stock-analysis-homepage.html */
+        .ticker-form {
+            display: flex;
+            margin-bottom: 1rem; /* Reduced margin for small tag */
+            flex-wrap: wrap; /* Allows wrapping for responsiveness and small tag */
+            align-items: flex-start; /* Align items to top */
+            gap: 10px;
+        }
+
+        .ticker-form input[type="text"] {
+             padding: 12px 15px;
+             flex-grow: 1;
+             border: none;
+             border-radius: 4px;
+             font-size: 1rem;
+             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+             color: #333;
+             min-width: 150px; /* Minimum width before wrapping */
+        }
+        /* Styling for the ticker input hints/requirements */
+         .ticker-form small {
+             width: 100%; /* Make small text take full width */
+             color: rgba(255, 255, 255, 0.7);
+             font-size: 0.85rem;
+             margin-top: 5px; /* Space above small text */
+             order: 3; /* Ensures the small tag appears after input/button */
+             flex-basis: 100%; /* Explicitly make it take the full line */
+             text-align: left; /* Align hint text to the left */
+         }
+
+
+        /* Button styles - Ensure consistency with style.css */
+         .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap; /* Prevent text wrapping */
+            flex-shrink: 0; /* Prevent button shrinking */
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #0e9b76; /* Slightly darker shade from index.html */
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background-color: #95a5a6; /* Disabled style from index.html */
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .btn i {
+           margin-right: 8px; /* Icon spacing */
+        }
+
+        /* Hero Chart styles */
+        .hero-chart {
+            flex: 0 0 45%;
+            max-width: 45%;
+            position: relative;
+            perspective: 1000px;
+        }
+         .hero-chart::after { /* Shadow effect from index.html */
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 20px;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        /* Progress Indicator styles from index.html, adjusted */
+        #progress-indicator {
+            display: none;
+            margin-top: 1.5rem; /* Adjusted margin */
+            padding: 1.5rem;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+            color: #fff;
+        }
+        #progress-indicator p#progress-main-message { margin-bottom: 1rem; font-size: 1.1rem; font-weight: 600; }
+        #progress-indicator p#generation-time-info { margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8; }
+        .spinner { border: 4px solid rgba(255, 255, 255, 0.2); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--primary); animation: spin 1s ease infinite; margin: 0 auto 1.5rem auto; }
+        /* Spinner inside button */
+        .btn .spinner { width: 20px; height: 20px; border-width: 3px; margin: 0 10px 0 0; border-left-color: #fff; display: inline-block; vertical-align: middle; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #progress-steps { list-style: none; padding: 0; margin: 0 auto 1rem auto; font-size: 0.95rem; color: rgba(255,255,255,0.8); text-align: left; max-width: 300px; }
+        #progress-steps li { margin-bottom: 0.7rem; padding-left: 2rem; position: relative; opacity: 0.6; transition: opacity 0.3s ease, color 0.3s ease; }
+        #progress-steps li::before { content: '⏳'; position: absolute; left: 0; font-size: 1.1em; line-height: 1; transition: content 0.3s ease; }
+        #progress-steps li.active { color: #fff; font-weight: 500; opacity: 1; }
+        #progress-steps li.active::before { content: '⚙️'; animation: spin-step 1.5s linear infinite; }
+        #progress-steps li.completed { color: var(--success); font-weight: 500; opacity: 1; }
+        #progress-steps li.completed::before { content: '✅'; animation: none; }
+        @keyframes spin-step { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        #timer-message { font-size: 0.9rem; margin-top: 1.5rem; color: rgba(255,255,255,0.9); font-weight: 500; }
+
+        /* Error Message Area styles */
+        #error-message-area { color: var(--danger); font-weight: bold; margin-top: 1rem; background-color: rgba(231, 76, 60, 0.15); padding: 10px 15px; border-radius: 4px; display: none; border: 1px solid var(--danger); text-align: center; backdrop-filter: blur(2px); text-shadow: 0px 0px 2px rgba(0,0,0,0.5); }
+
+        /* Styles for sections below hero */
+        .section-title { text-align: center; margin-bottom: 3rem; }
+        .section-title h2 { font-size: 2.5rem; margin-bottom: 1rem; color: var(--dark); position: relative; display: inline-block; }
+        .section-title h2::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 60px; height: 3px; background-color: var(--primary); }
+        .section-title p { font-size: 1.1rem; color: #666; max-width: 600px; margin: 0 auto; }
+
+        /* Features section styles */
+        .features { padding: 5rem 0; background-color: #fff; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+        .feature-card { padding: 2rem; border-radius: 8px; background-color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; text-align: center; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .feature-icon { margin-bottom: 1.5rem; color: var(--primary); font-size: 2.5rem; }
+        .feature-icon i { font-size: inherit; } /* Ensure icon size is controlled by parent */
+        .feature-card h3 { font-size: 1.4rem; margin-bottom: 1rem; color: var(--dark); }
+        .feature-card p { color: #555; font-size: 0.95rem; }
+
+        /* How it works section styles */
+        .how-it-works { padding: 5rem 0; background-color: var(--light); }
+        .process-steps { margin-top: 4rem; display: flex; justify-content: space-between; position: relative; gap: 1.5rem; flex-wrap: wrap; }
+        /* Line connecting steps (from index.html) */
+        .process-steps::before {
+            content: '';
+            position: absolute;
+            top: 40px; /* Adjust vertical position based on icon size */
+            left: 5%; /* Start after the first icon */
+            width: 90%; /* Span across most steps */
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 0;
+            opacity: 0.5;
+         }
+        .step { text-align: center; position: relative; z-index: 1; flex: 1; min-width: 200px; padding: 1rem; background-color: var(--light); /* Ensure step background covers line */ }
+        .step-icon { width: 80px; height: 80px; margin: 0 auto 1.5rem auto; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--primary); box-shadow: 0 8px 20px rgba(0,0,0,0.1); border: 2px solid var(--primary); transition: transform 0.3s ease; }
+        .step:hover .step-icon { transform: scale(1.1); }
+        .step h3 { font-size: 1.3rem; margin-bottom: 1rem; color: var(--dark); }
+        .step p { color: #666; font-size: 0.95rem; max-width: 250px; margin: 0 auto; }
+
+        /* Trending stocks section styles */
+        .trending-stocks { padding: 5rem 0; background-color: #fff; }
+        .stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; }
+        .stock-card { background-color: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s ease, border-left 0.3s ease; border-left: 4px solid transparent; }
+        .stock-card:hover { transform: translateY(-5px); border-left: 4px solid var(--primary); }
+        .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .stock-name { font-weight: 600; color: var(--dark); }
+        .stock-symbol { color: var(--secondary); font-weight: 700; background-color: rgba(46, 134, 222, 0.1); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.9rem; }
+        .stock-price { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--dark); }
+        .stock-change { display: flex; align-items: center; margin-bottom: 1rem; font-weight: 600; }
+        .stock-change.up { color: var(--success); }
+        .stock-change.down { color: var(--danger); }
+        .stock-change svg { margin-right: 0.3rem; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .prediction { font-size: 0.95rem; color: #555; margin-top: 0.5rem; }
+        .prediction strong { color: var(--dark); }
+
+        /* CTA Section styles */
+        .cta { padding: 5rem 0; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: #fff; text-align: center; }
+        .cta h2 { font-size: 2.5rem; margin-bottom: 1.5rem; }
+        .cta p { font-size: 1.2rem; max-width: 700px; margin: 0 auto 2rem auto; opacity: 0.9; }
+        .btn-cta { background-color: #fff; color: var(--primary); padding: 0.8rem 2rem; font-size: 1.1rem; border-radius: 30px; text-decoration: none; font-weight: 600; display: inline-block; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .btn-cta:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 25px rgba(0,0,0,0.2); color: var(--secondary); }
+
+        /* Additional sections from index.html */
+        /* Stats Section */
+        .stats-section { padding: 4rem 0; background-color: var(--dark); color: #fff; text-align: center; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .stat-item { padding: 2rem; }
+        .stat-number { font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--primary); font-family: 'Montserrat', sans-serif; }
+        .stat-text { font-size: 1.1rem; opacity: 0.8; }
+
+        /* Market Insights Section */
+         .market-insights { background-color: #f8f9fa; padding: 5rem 0; }
+         .insights-container { display: flex; flex-wrap: wrap; gap: 2rem; }
+         .insight-card { flex: 1 1 300px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+         .insight-card:hover { transform: translateY(-10px); }
+         .insight-card img { width: 100%; height: 200px; object-fit: cover; background-color: #eee; /* Placeholder BG */ }
+         .insight-content { padding: 1.5rem; }
+         .insight-content h3 { margin-bottom: 0.75rem; color: var(--dark); }
+         .insight-content p { color: #666; margin-bottom: 1rem; }
+         .read-more { color: var(--primary); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; }
+         .read-more i { margin-left: 0.5rem; transition: transform 0.3s ease; }
+         .read-more:hover i { transform: translateX(3px); }
+
+        /* Newsletter Section */
+         .newsletter { padding: 4rem 0; background-color: #fff; }
+         .newsletter-content { max-width: 700px; margin: 0 auto; text-align: center; }
+         .newsletter h3 { font-size: 2rem; margin-bottom: 1rem; color: var(--dark); }
+         .newsletter p { margin-bottom: 2rem; color: #555; }
+         .newsletter-form { display: flex; max-width: 500px; margin: 0 auto; flex-wrap: wrap; /* Allow wrap */ gap: 10px; }
+         .newsletter-form input { flex: 1; padding: 0.8rem 1rem; border: 1px solid #ddd; border-radius: 4px; /* Round all corners */ font-size: 1rem; min-width: 200px; }
+         .newsletter-form button { padding: 0.8rem 1.5rem; /* Added vertical padding */ background-color: var(--primary); color: #fff; border: none; border-radius: 4px; /* Round all corners */ cursor: pointer; font-weight: 600; transition: background-color 0.3s ease; }
+         .newsletter-form button:hover { background-color: #0e9b76; }
+
+
+        /* Responsive adjustments merged from index.html and stock-analysis-homepage.html */
+        @media screen and (max-width: 992px) {
+            .hero-content { flex-direction: column; text-align: center; }
+            .hero-text, .hero-chart { max-width: 100%; flex: 0 0 100%; }
+            .hero-text { margin-bottom: 2rem; }
+            .ticker-form { justify-content: center; } /* Center form items */
+            .hero-chart { margin-top: 2rem; max-width: 80%; margin-left: auto; margin-right: auto; }
+            .process-steps { justify-content: center; } /* Center steps when wrapping */
+             .founder-content { flex-direction: column; }
+             .founder-image { margin: 0 auto 2rem auto; }
+        }
+        @media screen and (max-width: 768px) {
+            .hero-text h1 { font-size: 2.2rem; }
+            .hero-text p { font-size: 1rem; }
+            .section-title h2 { font-size: 2rem; }
+            .cta h2 { font-size: 2rem; }
+            .feature-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); } /* Adjust feature grid */
+            .stock-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } /* Adjust stock grid */
+             .founder-text h2 { font-size: 2rem; }
+        }
+        @media screen and (max-width: 576px) {
+            /* Combined form styles for small screens */
+            .ticker-form {
+                flex-direction: column; /* Stack elements */
+                align-items: stretch; /* Make elements full width */
+                gap: 1rem; /* Add vertical gap */
+             }
+            .ticker-form input[type="text"] {
+                margin-right: 0; /* Remove right margin if any */
+                margin-bottom: 0; /* Remove bottom margin if stacking */
+                width: 100%; /* Ensure full width */
+            }
+             .ticker-form small {
+                 text-align: center; /* Center hint text */
+                 margin-top: 0.5rem; /* Adjust spacing */
+             }
+            .ticker-form button {
+                margin-left: 0; /* Remove left margin */
+                justify-content: center; /* Center button content */
+                width: 100%; /* Ensure full width */
+             }
+            /* Other small screen adjustments */
+            .feature-grid { grid-template-columns: 1fr; }
+            .stock-grid { grid-template-columns: 1fr; }
+            .step { min-width: 100%; }
+             .process-steps { flex-direction: column; gap: 3rem; } /* Stack steps */
+             .process-steps::before { display: none; } /* Hide connector line */
+            .newsletter-form { flex-direction: column; }
+             .newsletter-form input { margin-bottom: 1rem; }
+        }
+        /* --- End of styles from index.html --- */
+    </style>
+{% endblock %}
+
+{% block content %}
+    {# --- Main content area using structure from index.html --- #}
+    {# Header and Footer are in base.html #}
+
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                {# Heading and paragraph from index.html #}
+                <h1>AI-Powered Stock Analysis & Price Prediction</h1>
+                <p>Employs advanced machine learning algorithms to deliver precise market movement predictions. Users receive complete analytical information plus real-time discoveries coupled with data-based guidance from the platform.</p>
+                <P>Enter a stock ticker To analyse the stock and generate the price predictions for 12 months:</P>
+                {# Form integrated from stock-analysis-homepage.html #}
+                <form id="ticker-form" class="ticker-form">
+                     <input type="text" id="ticker-input" name="ticker" list="ticker-suggestions" placeholder="Enter Stock Ticker (e.g., AAPL)" required autocomplete="off" title="Enter a valid stock ticker (e.g., MSFT, BRK-A, ^GSPC)." >
+                    <datalist id="ticker-suggestions">
+                         {# Options from original form #}
+                        <option value="AAPL">
+                        <option value="MSFT">
+                        <option value="GOOGL">
+                        <option value="AMZN">
+                        <option value="TSLA">
+                        <option value="NVDA">
+                        <option value="META">
+                        <option value="AMD">
+                        <option value="NFLX">
+                        <option value="JPM">
+                     </datalist>
+                    <button type="submit" id="generate-button" class="btn btn-primary">
+                        <i class="fas fa-chart-bar"></i> Generate Report
+                    </button>
+                    <small>Use standard US stock tickers or index symbols (e.g., MSFT, ^GSPC).</small>
+                </form>
+
+                <div id="progress-indicator">
+                    <p id="progress-main-message">Generating report, please wait...</p>
+                    <p id="generation-time-info"><i>This process can take up to a minute.</i></p>
+                    <div class="spinner"></div>
+                    <ul id="progress-steps">
+                        <li id="step-fetch-hist">Fetching historical data...</li>
+                        <li id="step-fetch-macro">Fetching macroeconomic data...</li>
+                        <li id="step-preprocess">Preprocessing data...</li>
+                        <li id="step-train">Training prediction model...</li>
+                        <li id="step-fetch-fund">Fetching fundamentals...</li>
+                        <li id="step-generate">Generating Prediction Report...</li>
+                        <li id="step-finalize">Finalizing...</li>
+                    </ul>
+                    <p id="timer-message">Time taken: 0 sec</p>
+                </div>
+
+                 {# Error message area from original, styled by CSS above #}
+                 <div id="error-message-area"></div>
+            </div>
+
+            {# Hero chart SVG from index.html #}
+            <div class="hero-chart">
+                 <svg width="100%" height="300" viewBox="0 0 500 300" preserveAspectRatio="xMidYMid meet">
+                     <defs> <linearGradient id="gradientArea" x1="0%" y1="0%" x2="0%" y2="100%"> <stop offset="0%" stop-color="#10ac84" stop-opacity="0.7" /> <stop offset="100%" stop-color="#10ac84" stop-opacity="0.1" /> </linearGradient> <linearGradient id="predictionGradient" x1="0%" y1="0%" x2="0%" y2="100%"> <stop offset="0%" stop-color="#2e86de" stop-opacity="0.7" /> <stop offset="100%" stop-color="#2e86de" stop-opacity="0.1" /> </linearGradient> <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"> <feGaussianBlur stdDeviation="3" result="blur" /> <feMerge> <feMergeNode in="blur" /> <feMergeNode in="SourceGraphic" /> </feMerge> </filter> </defs>
+                     <g stroke="rgba(255,255,255,0.1)" stroke-width="1"> <line x1="0" y1="50" x2="500" y2="50" /><line x1="0" y1="100" x2="500" y2="100" /><line x1="0" y1="150" x2="500" y2="150" /><line x1="0" y1="200" x2="500" y2="200" /><line x1="0" y1="250" x2="500" y2="250" /><line x1="50" y1="0" x2="50" y2="300" /><line x1="150" y1="0" x2="150" y2="300" /><line x1="250" y1="0" x2="250" y2="300" /><line x1="350" y1="0" x2="350" y2="300" /><line x1="450" y1="0" x2="450" y2="300" /> </g>
+                     <path d="M0,200 C50,180 100,190 150,150 S200,140 250,100 S300,120 350,80 S400,60 450,40" fill="none" stroke="#10ac84" stroke-width="3" />
+                     <path d="M450,40 C475,30 485,25 500,20" fill="none" stroke="#2e86de" stroke-width="3" stroke-dasharray="5,5" filter="url(#glow)" />
+                     <path d="M0,200 C50,180 100,190 150,150 S200,140 250,100 S300,120 350,80 S400,60 450,40 L450,300 L0,300 Z" fill="url(#gradientArea)" opacity="0.4" />
+                     <path d="M450,40 C475,30 485,25 500,20 L500,300 L450,300 Z" fill="url(#predictionGradient)" opacity="0.4" />
+                     <circle cx="50" cy="180" r="4" fill="#10ac84" filter="url(#glow)" /><circle cx="100" cy="190" r="4" fill="#10ac84" filter="url(#glow)" /><circle cx="150" cy="150" r="4" fill="#10ac84" filter="url(#glow)" /><circle cx="200" cy="140" r="4" fill="#10ac84" filter="url(#glow)" /><circle cx="250" cy="100" r="4" fill="#10ac84" filter="url(#glow)" /><circle cx="300" cy="120" r="4" fill="#10ac84" filter="url(#glow)" /><circle cx="350" cy="80" r="4" fill="#10ac84" filter="url(#glow)" /><circle cx="400" cy="60" r="4" fill="#10ac84" filter="url(#glow)" /><circle cx="450" cy="40" r="4" fill="#10ac84" filter="url(#glow)" /><circle cx="500" cy="20" r="4" fill="#2e86de" filter="url(#glow)" />
+                     <text x="10" y="20" fill="rgba(255,255,255,0.8)" font-size="12" font-family="var(--font-main)">Price ($)</text>
+                    <text x="490" y="290" fill="rgba(255,255,255,0.8)" font-size="12" font-family="var(--font-main)" text-anchor="end">Time</text>
+                 </svg>
+            </div>
+        </div>
+    </section>
+
+     <section class="stats-section">
+         <div class="container">
+             {# Content from index.html #}
+             <h2>Our Impact in Numbers</h2>
+             <div class="stats-grid">
+                 <div class="stat-item">
+                     <div class="stat-number">90%</div>
+                     <div class="stat-text">Prediction Accuracy</div>
+                 </div>
+                 <div class="stat-item">
+                     <div class="stat-number">500+</div>
+                     <div class="stat-text">Active Users</div>
+                 </div>
+                 <div class="stat-item">
+                     <div class="stat-number">100+</div>
+                     <div class="stat-text">Report Generated</div>
+                 </div>
+                 <div class="stat-item">
+                     <div class="stat-number">24/7</div>
+                     <div class="stat-text">Market Coverage</div>
+                 </div>
+             </div>
+         </div>
+     </section>
+
+    {# Feature Section structure from index.html #}
+    <section id="features" class="features">
+       <div class="container">
+             <div class="section-title">
+                {# Content from index.html #}
+                <h2>What we Deliver</h2>
+                <p>Discover how our advanced AI-powered tools can transform your investment strategy and maximize returns.</p>
+            </div>
+             <div class="feature-grid">
+                 {# Feature cards content from index.html #}
+                 <div class="feature-card"><div class="feature-icon"><i class="fas fa-robot fa-3x"></i></div><h3>AI-Powered Analysis</h3><p>Our advanced machine learning algorithms analyze market patterns, Technical Indicators (RSI, MACD, Bollinger bands, Support & Resistance etc), and macro & economic indicators to provide accurate predictions.</p></div>
+
+                 <div class="feature-card"><div class="feature-icon"><i class="fas fa-chart-line fa-3x"></i></div><h3>Real-Time Predictions</h3><p>Get instant access to real-time stock predictions with detailed current sentiments and Technical Analysis with Charts.</p></div>
+
+                 <div class="feature-card"><div class="feature-icon"><i class="fas fa-file-alt fa-3x"></i></div><h3>Comprehensive Reports</h3><p>Receive detailed reports with Stock Price Prediction, fundamental analysis, technical indicators analysis, Company Information and Insights and risk assessments for informed decision-making.</p></div>
+
+
+                 <div class="feature-card"><div class="feature-icon"><i class="fas fa-users fa-3x"></i></div><h3>User-Friendly Interface</h3><p>Our platform is designed for both novice and experienced investors, making stock analysis accessible to everyone.</p></div>
+
+                    <div class="feature-card"><div class="feature-icon"><i class="fas fa-shield-alt fa-3x"></i></div><h3>Data Security</h3><p>Your information receives top-tier encryption together with advanced security protocols that protect it from unauthorized access.</p></div>
+                    
+                    <div class="feature-card" style="position: relative;">
+                        <div class="feature-icon"><i class="fas fa-comments fa-3x"></i></div>
+                        <h3>Expert Insights</h3>
+                        <p>Benefit from expert analysis and insights from our team of financial analysts and data scientists.</p>
+                        <div style="position: absolute; top: 10px; right: 10px; background-color: var(--warning); color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Upcoming feature</div>
+                    </div></div>
+             </div>
+         </div>
+    </section>
+
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-title"></div>
+            <div class="section-title">
+            <h2>How StockInsight Works</h2>
+            <p>Our well-developed AI system utilizes an organized system for producing accurate predictions.</p>
+            </div>
+            <div class="process-steps" id="animated-process-steps">
+            <div class="step" id="step-0"><div class="step-icon"><i class="fas fa-database"></i></div><h3>Data Collection</h3><p>We gather vast amounts of historical price data, Macro indicators, Technical indicator, and fundamentals of company.</p></div>
+            <div class="step" id="step-1"><div class="step-icon"><i class="fas fa-cogs"></i></div><h3>AI Processing</h3><p>Our AI models (Prophet, LSTM and Time series) trained on collected data and try to analyze patterns, correlations, and anomalies in the collected data.</p></div>
+            <div class="step" id="step-2"><div class="step-icon"><i class="fas fa-chart-pie"></i></div><h3>Prediction Generation</h3><p>The system generates price predictions with accuracy scores and confidence intervals along with Risks integrated.</p></div>
+            <div class="step" id="step-3"><div class="step-icon"><i class="fas fa-file-invoice"></i></div><h3>Report Creation</h3><p>A detailed reports is created with actionable insights, Technical Analysis, Fundamental Analysis and investment recommendations for both short and long term.</p></div>
+            </div>
+        </div>
+        <script>
+            // Animation for process steps: highlight each step from left to right
+            document.addEventListener('DOMContentLoaded', function () {
+            const steps = [
+                document.getElementById('step-0'),
+                document.getElementById('step-1'),
+                document.getElementById('step-2'),
+                document.getElementById('step-3')
+            ];
+            let current = 0;
+
+            function animateStep() {
+                if (current > 0) {
+                steps[current - 1].classList.remove('active');
+                steps[current - 1].classList.add('completed');
+                }
+                if (current < steps.length) {
+                steps[current].classList.add('active');
+                setTimeout(() => {
+                    current++;
+                    animateStep();
+                }, 1100);
+                } else {
+                // After all steps, keep them all completed for a while, then reset
+                setTimeout(() => {
+                    steps.forEach(s => s.classList.remove('active', 'completed'));
+                    current = 0;
+                    animateStep();
+                }, 1800);
+                }
+            }
+
+            // Add animation CSS for .active and .completed
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .process-steps .step { opacity: 0.6; transition: box-shadow 0.4s, opacity 0.4s, transform 0.4s; }
+                .process-steps .step.active {
+                box-shadow: 0 0 0 4px var(--primary, #10ac84), 0 8px 20px rgba(16,172,132,0.10);
+                opacity: 1;
+                transform: scale(1.05);
+                z-index: 2;
+                }
+                .process-steps .step.completed {
+                opacity: 1;
+                box-shadow: 0 0 0 2px var(--success, #27ae60);
+                background: linear-gradient(90deg, #eafaf1 0%, #f5f6fa 100%);
+                z-index: 1;
+                }
+                .process-steps .step .step-icon {
+                transition: border-color 0.4s, background 0.4s, color 0.4s;
+                }
+                .process-steps .step.active .step-icon {
+                border-color: var(--primary, #10ac84);
+                background: #fff;
+                color: var(--primary, #10ac84);
+                animation: pulse-step 1s infinite alternate;
+                }
+                .process-steps .step.completed .step-icon {
+                border-color: var(--success, #27ae60);
+                background: #eafaf1;
+                color: var(--success, #27ae60);
+                animation: none;
+                }
+                @keyframes pulse-step {
+                0% { box-shadow: 0 0 0 0 rgba(16,172,132,0.15);}
+                100% { box-shadow: 0 0 0 12px rgba(16,172,132,0.05);}
+                }
+            `;
+            document.head.appendChild(style);
+
+            animateStep();
+            });
+        </script>
+        </section>
+
+    
+     <section id="market-insights" class="market-insights">
+        <div class="container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+            <div class="section-title">
+                <h2>Latest Market Insights</h2>
+                <p>Stay informed with our expert analysis and in-depth market research.</p>
+            </div>
+            <div class="insights-container" style="display: flex; justify-content: center; align-items: center; flex-direction: column;"></div>
+                <div id="animated-text" style="font-size: 1.5rem; font-weight: bold; color: var(--primary); font-family: var(--font-main);"></div>
+            </div>
+            <script>
+                const text = "We are working on it..... Please be patient.";
+                const animatedTextElement = document.getElementById('animated-text');
+                let index = 0;
+
+                function typeText() {
+                    if (index < text.length) {
+                        animatedTextElement.textContent += text.charAt(index);
+                        index++;
+                        setTimeout(typeText, 100); // Adjust typing speed here
+                    }
+                }
+
+                typeText();
+            </script>
+         </div>
+     </section>
+
+    <section class="trending-stocks">
+         <div class="container">
+              <div class="section-title">
+                {# Content from index.html #}
+                <h2>Trending Stocks Today</h2>
+                <p>Check out the hottest stocks on our radar with real-time AI predictions.</p>
+              </div>
+              <div class="stock-grid">
+                  {# Example stock cards from index.html #}
+                  <div class="stock-card"><div class="stock-header"><div class="stock-name">Apple Inc.</div><div class="stock-symbol">AAPL</div></div><div class="stock-price">$189.47</div><div class="stock-change up"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg> 2.34%</div><div class="prediction"><strong>AI Prediction:</strong> Strong Buy</div></div>
+                  <div class="stock-card"><div class="stock-header"><div class="stock-name">Microsoft Corp.</div><div class="stock-symbol">MSFT</div></div><div class="stock-price">$417.82</div><div class="stock-change up"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg> 1.89%</div><div class="prediction"><strong>AI Prediction:</strong> Buy</div></div>
+                  <div class="stock-card"><div class="stock-header"><div class="stock-name">Tesla Inc.</div><div class="stock-symbol">TSLA</div></div><div class="stock-price">$246.19</div><div class="stock-change down"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg> 1.24%</div><div class="prediction"><strong>AI Prediction:</strong> Hold</div></div>
+                  <div class="stock-card"><div class="stock-header"><div class="stock-name">NVIDIA Corp.</div><div class="stock-symbol">NVDA</div></div><div class="stock-price">$105.82</div><div class="stock-change up"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg> 3.67%</div><div class="prediction"><strong>AI Prediction:</strong> Strong Buy</div></div>
+              </div>
+          </div>
+    </section>
+
+          <!-- {# Testimonials Section structure from index.html #}
+     <section class="testimonials">
+         <div class="container">
+             <div class="section-title">
+                 <h2>What Our Users Say</h2>
+                 <p>Success stories from investors who transformed their portfolios with StockInsight.</p>
+             </div>
+             <div class="testimonial-slider">
+                 <div class="testimonial-card">
+                     <div class="testimonial-content">
+                         "StockInsight has completely changed my approach to investing. The AI predictions have been consistently accurate, and I've seen a 38% increase in my portfolio in just 6 months. The detailed analysis reports make complex market movements easy to understand."
+                     </div>
+                     <div class="testimonial-author">
+                         <div class="author-image">
+                             {# Using placeholder image as in index.html #}
+                             <img src="/api/placeholder/100/100" alt="Sarah Johnson">
+                         </div>
+                         <div class="author-info">
+                             <h4>Sarah Johnson</h4>
+                             <p>Retail Investor</p>
+                         </div>
+                     </div>
+                 </div>
+                 {# Add more cards or slider logic if needed #}
+             </div>
+         </div>
+     </section> -->
+
+
+    {# CTA Section structure from index.html #}
+    <section class="cta">
+        <div class="container">
+             {# Content from index.html #}
+             <h2>Ready to Transform Your Investment Strategy?</h2>
+             <p>Join one of our investors who have already discovered the power of machine learning based stock predictions and analysis. Get started today and see the difference advanced analytics can make.</p>
+             <a href="#ticker-form" class="btn-cta">Generate Your Report Now</a>
+        </div>
+    </section>
+
+
+     <section id="contact" class="newsletter">
+         <div class="container newsletter-content">
+             <h3>Stay Updated with Market Insights</h3>
+             <p>Subscribe to our newsletter to receive weekly AI-generated market analysis and investment opportunities.</p>
+             <form class="newsletter-form">
+                 <input type="email" placeholder="Your Email Address" required>
+                 <button type="submit"><i class="fas fa-paper-plane"></i> Subscribe</button>
+             </form>
+         </div>
+     </section>
+
+    {# --- End of content replacement --- #}
+{% endblock %}
+
+{% block body_scripts %}
+    {# --- Original JavaScript from stock-analysis-homepage.html is KEPT HERE --- #}
+    <script>
+        // --- JavaScript adapted from original stock_analysis_homepage.html, ensuring compatibility ---
+        const tickerForm = document.getElementById('ticker-form');
+        const tickerInput = document.getElementById('ticker-input');
+        const generateButton = document.getElementById('generate-button');
+        const progressIndicator = document.getElementById('progress-indicator');
+        const progressMainMessage = document.getElementById('progress-main-message');
+        const progressSteps = document.getElementById('progress-steps').querySelectorAll('li');
+        const timerMessage = document.getElementById('timer-message');
+        const errorMessageArea = document.getElementById('error-message-area');
+
+        let timerInterval = null;
+        let secondsElapsed = 0;
+
+        function updateTimer() {
+            secondsElapsed++;
+            timerMessage.textContent = `Time taken: ${secondsElapsed} sec`;
+        }
+
+        function updateStep(stepIndex, status) {
+            // (Function code as provided in previous correct integrations)
+            if (stepIndex < progressSteps.length) {
+                progressSteps[stepIndex].classList.remove('active', 'completed');
+                if (status === 'active') {
+                    progressSteps[stepIndex].classList.add('active');
+                    // Mark previous steps as completed
+                    for (let i = 0; i < stepIndex; i++) {
+                        progressSteps[i].classList.remove('active');
+                        progressSteps[i].classList.add('completed');
+                    }
+                } else if (status === 'completed') {
+                     // Mark all steps up to and including this one as completed
+                    for (let i = 0; i <= stepIndex; i++) {
+                        progressSteps[i].classList.remove('active');
+                        progressSteps[i].classList.add('completed');
+                    }
+                }
+            }
+        }
+
+
+        function resetProgress() {
+            // (Function code as provided in previous correct integrations)
+             progressSteps.forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            timerMessage.textContent = 'Time taken: 0 sec';
+            secondsElapsed = 0;
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            progressIndicator.style.display = 'none';
+            errorMessageArea.style.display = 'none';
+            errorMessageArea.textContent = '';
+            generateButton.disabled = false;
+            // Reset button text/icon based on new design
+            generateButton.innerHTML = '<i class="fas fa-chart-bar" style="margin-right: 8px;"></i> Generate Report';
+        }
+
+        tickerForm.addEventListener('submit', async (event) => {
+            // (Complete event listener code as provided in original stock-analysis-homepage.html)
+            // This includes:
+            // - event.preventDefault()
+            // - ticker value retrieval and validation (using the pattern from the input field if needed)
+            // - resetProgress() call
+            // - Showing progress indicator and disabling button
+            // - Starting timer
+            // - Simulating step progress (using updateStep)
+            // - try...catch block with fetch call to Flask endpoint "{{ url_for('generate_report') }}"
+            // - Handling success (parsing JSON, redirecting to viewer_url)
+            // - Handling errors (HTTP errors, backend errors, network errors)
+            // - Updating UI (showing errors in errorMessageArea, enabling button) in error cases
+             event.preventDefault();
+             const ticker = tickerInput.value.trim().toUpperCase();
+
+             // Using a slightly more robust regex to match common ticker patterns including indices
+             const validTickerRegex = /^[A-Z0-9.^ -]{1,10}$/; // Allows letters, numbers, '.', '^', '-', space up to 10 chars
+
+             if (!ticker || !validTickerRegex.test(ticker)) {
+                 errorMessageArea.textContent = 'Invalid ticker symbol. Use standard symbols (e.g., AAPL, BRK-A, ^GSPC).';
+                 errorMessageArea.style.display = 'block';
+                 progressIndicator.style.display = 'none'; // Hide progress if error
+                 errorMessageArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                 return;
+             }
+
+             resetProgress(); // Reset UI elements
+             progressMainMessage.textContent = `Generating report for ${ticker}, please wait...`;
+             progressIndicator.style.display = 'block'; // Show progress
+             progressIndicator.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+             generateButton.disabled = true;
+             // Update button text/icon for loading state
+             generateButton.innerHTML = '<div class="spinner"></div> Generating...';
+
+             secondsElapsed = 0;
+             timerMessage.textContent = `Time taken: ${secondsElapsed} sec`;
+             timerInterval = setInterval(updateTimer, 1000);
+
+             // Simulate Step Progress (adjust timing as needed)
+             updateStep(0, 'active'); // Fetch hist
+             await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 400)); // Simulate variable time
+             updateStep(1, 'active'); // Fetch macro
+             await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 400));
+             updateStep(2, 'active'); // Preprocess
+             await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 500));
+             updateStep(3, 'active'); // Train
+             await new Promise(resolve => setTimeout(resolve, 1200 + Math.random() * 800));
+             updateStep(4, 'active'); // Fetch fund
+             await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 400));
+             updateStep(5, 'active'); // Generate Report
+             await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 500));
+             updateStep(6, 'active'); // Finalize
+
+
+             try {
+                 const startTime = performance.now();
+                 // Make sure the URL uses Flask's url_for to be correct
+                 const response = await fetch("{{ url_for('generate_report') }}", {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'Accept': 'application/json' // Expect JSON back
+                     },
+                     body: JSON.stringify({ ticker: ticker })
+                 });
+
+                 // Stop timer after response received
+                 if (timerInterval) clearInterval(timerInterval);
+                 timerInterval = null;
+                 const endTime = performance.now();
+                 // Calculate duration more precisely
+                 const preciseDuration = ((endTime - startTime) / 1000).toFixed(1);
+                 // Use precise duration if > 0, otherwise fallback to interval timer
+                 const displayDuration = parseFloat(preciseDuration) > 0 ? preciseDuration : secondsElapsed;
+                 timerMessage.textContent = `Total time: ${displayDuration} seconds.`;
+
+                 if (response.ok) {
+                     const result = await response.json(); // Parse successful response
+                     console.log("Backend response:", result);
+
+                     if (result.status === 'success' && result.viewer_url) {
+                         // --- SUCCESS ---
+                         updateStep(6, 'completed'); // Mark final step complete
+                         timerMessage.textContent = `Report ready! Total time: ${displayDuration}s. Redirecting...`;
+                         progressMainMessage.textContent = `Report for ${result.ticker} generated!`;
+                         // Short delay before redirecting
+                         await new Promise(resolve => setTimeout(resolve, 1500));
+                         window.location.href = result.viewer_url; // Redirect to the report viewer page
+                     } else {
+                         // --- BACKEND ERROR (e.g., validation failed, generation error) ---
+                         const message = result.message || 'An unknown error occurred while generating the report.';
+                         errorMessageArea.textContent = `Error: ${message}`;
+                         errorMessageArea.style.display = 'block';
+                         progressIndicator.style.display = 'none'; // Hide progress on error
+                         resetProgress(); // Reset button etc.
+                         errorMessageArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                         console.error('Report generation failed (server-side error):', result);
+                     }
+                 } else {
+                     // --- HTTP ERROR (e.g., 404, 500) ---
+                     let message = `Server error ${response.status}: ${response.statusText}`;
+                     // Try to get more specific error message from response body if available
+                     try {
+                          const errorResult = await response.json();
+                          message = errorResult.message || message; // Use backend message if present
+                          console.error('HTTP Error Response Body:', errorResult);
+                     } catch (e) {
+                          console.warn("Could not parse error response as JSON.");
+                     }
+                     errorMessageArea.textContent = `Error: ${message}`;
+                     errorMessageArea.style.display = 'block';
+                     progressIndicator.style.display = 'none';
+                     resetProgress();
+                     errorMessageArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     console.error('Report generation failed (HTTP error):', message, response.status);
+                 }
+
+             } catch (error) {
+                 // --- NETWORK/FETCH ERROR ---
+                 if (timerInterval) clearInterval(timerInterval); // Stop timer on network error too
+                 errorMessageArea.textContent = `Network error or server unavailable. Please check connection and try again. (${error.message})`;
+                 errorMessageArea.style.display = 'block';
+                 progressIndicator.style.display = 'none';
+                 resetProgress();
+                 errorMessageArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                 console.error('Report generation failed (network/fetch error):', error);
+             }
+        });
+
+        // Smooth scrolling for anchor links (from index.html)
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+
+                if (targetElement) {
+                    // Use scrollIntoView for smooth scrolling
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start' // Scroll to the top of the target element
+                    });
+                 } else if (targetId === '#') {
+                    // If href is just "#", scroll to top of page
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                 }
+            });
+        });
+    </script>
+{% endblock %}
